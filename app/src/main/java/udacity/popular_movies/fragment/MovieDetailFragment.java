@@ -66,16 +66,19 @@ public class MovieDetailFragment extends Fragment {
 
 
         ImageView poster= (ImageView) view.findViewById(R.id.iv_posterview);
-
+        ImageView coverimage= (ImageView) view.findViewById(R.id.iv_coverimage);
         PopularMovieApplication.mPicasso.load(AppUtils.createPosterUrl(mMovie.getPoster_path()))
                 .into(poster);
+
+        PopularMovieApplication.mPicasso.load(AppUtils.createPosterUrl(mMovie.getBackdrop_path()))
+                .into(coverimage);
 
 
         TextView title= (TextView) view.findViewById(R.id.tv_movie_title);
         TextView release= (TextView) view.findViewById(R.id.tv_release_year);
         TextView users_rating= (TextView) view.findViewById(R.id.tv_duration);
         TextView votes= (TextView) view.findViewById(R.id.tv_rating);
-
+        TextView overview= (TextView) view.findViewById(R.id.tv_overview);
 
         title.setText(mMovie.getTitle());
 
@@ -87,7 +90,7 @@ public class MovieDetailFragment extends Fragment {
 
 
         votes.setText(mMovie.getVote_count() + " Votes");
-
+        overview.setText(mMovie.getOverview());
 
     }
 }
