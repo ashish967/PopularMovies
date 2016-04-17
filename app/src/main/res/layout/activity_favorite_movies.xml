@@ -1,0 +1,38 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="udacity.popular_movies.activity.FavoriteMoviesActivity">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:id="@+id/toolbar"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:src="@drawable/back_dark"
+            android:id="@+id/iv_back_icon"
+            android:layout_gravity="center_vertical"
+            android:layout_height="30dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:gravity="center"
+                android:text="FAVORITE MOVIES"
+                android:textColor="@color/black"
+                android:textSize="@dimen/action_bar_title_size"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+    <GridView
+        android:layout_width="match_parent"
+        android:numColumns="2"
+        android:layout_below="@id/toolbar"
+        android:id="@+id/gridview_popularmovies"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+
+</RelativeLayout>

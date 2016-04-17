@@ -4,9 +4,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 
 import udacity.popular_movies.R;
 import udacity.popular_movies.fragment.PopularMoviesFragment;
@@ -19,11 +22,59 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
     public static String TAG= MainActivity.class.getSimpleName();
 
     String mSortBy;
+    private PopupMenu mMenu;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ImageView moreoption= (ImageView) findViewById(R.id.iv_more_option);
+
+        mMenu= new PopupMenu(this,moreoption);
+        mMenu.getMenuInflater().inflate(R.menu.menu_main, mMenu.getMenu());
+        moreoption.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                handleMoreOption();
+            }
+        });
+
+        mMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                switch (item.getItemId()) {
+
+                    case R.id.action_settings:
+                        handleSettingsAction();
+                        break;
+
+                    case R.id.action_fav:
+                        handleFavoriteMoviesAction();
+                        break;
+
+
+                }
+
+
+                return true;
+            }
+        });
         Log.d(TAG, "onCreate");
+    }
+
+    private void handleFavoriteMoviesAction() {
+
+        Intent intent= new Intent(this, FavoriteMoviesActivity.class);
+        startActivity(intent);
+
+    }
+
+    private void handleMoreOption() {
+
+        mMenu.show();
     }
 
 
@@ -33,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
     }
 
     @Override
-    public void onPosterClick(Uri movie) {
+    public void onPosterClick(String movie) {
 
 //        Toast.makeText(this,"Movie: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
 

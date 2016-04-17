@@ -5,6 +5,9 @@
     tools:context="udacity.popular_movies.fragment.PopularMoviesFragment">
 
 
+
+
+
     <GridView
         android:layout_width="match_parent"
         android:numColumns="2"

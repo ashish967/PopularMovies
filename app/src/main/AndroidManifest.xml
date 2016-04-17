@@ -11,8 +11,8 @@
         android:icon="@mipmap/appicon"
         android:theme="@style/AppTheme" >
         <provider
-            android:authorities="com.example.udacity.popular_movies"
-            android:name=".data.MoviesProvider" >
+            android:name=".data.MoviesProvider"
+            android:authorities="com.example.udacity.popular_movies" >
         </provider>
 
         <activity
@@ -27,17 +27,19 @@
         <activity
             android:name=".activity.MovieDetailActivity"
             android:label="@string/title_activity_movie_detail" >
-
-
         </activity>
         <activity
             android:name=".activity.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:theme="@style/SettingsTheme"
-            android:parentActivityName=".activity.MainActivity" >
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/SettingsTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="udacity.popular_movies.activity.MainActivity" />
+        </activity>
+        <activity
+            android:name=".activity.FavoriteMoviesActivity"
+            android:label="@string/title_activity_favorite_movies" >
         </activity>
     </application>
 

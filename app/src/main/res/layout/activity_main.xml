@@ -1,7 +1,39 @@
+<LinearLayout
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:minHeight="?attr/actionBarSize"
+        android:layout_height="wrap_content">
+
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="@dimen/action_bar_title_size"
+            android:text="POPULAR MOVIES"
+            android:layout_gravity="center"
+            android:layout_height="wrap_content" />
+
+
+        <ImageView
+            android:layout_width="30dp"
+            android:id="@+id/iv_more_option"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_more_vert_black"
+            android:layout_height="30dp" />
+
+    </LinearLayout>
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_popularmovies"
     android:name="udacity.popular_movies.fragment.PopularMoviesFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
     tools:layout="@android:layout/list_content" />
+</LinearLayout>

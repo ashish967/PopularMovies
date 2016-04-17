@@ -1,17 +1,13 @@
 package udacity.popular_movies.fragment;
 
 import android.content.Intent;
-import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,10 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.Response;
@@ -39,8 +35,7 @@ import udacity.popular_movies.activity.MovieDetailActivity;
 import udacity.popular_movies.activity.SettingsActivity;
 import udacity.popular_movies.adapter.ReviewsAdapter;
 import udacity.popular_movies.application.PopularMovieApplication;
-import udacity.popular_movies.data.MoviesContract;
-import udacity.popular_movies.datatypes.Movie;
+import udacity.popular_movies.datatypes.RealmMovie;
 import udacity.popular_movies.datatypes.ReviewType;
 import udacity.popular_movies.datatypes.ReviewsListResult;
 import udacity.popular_movies.datatypes.VideoType;
@@ -51,16 +46,16 @@ import udacity.popular_movies.utils.Logger;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MovieDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MovieDetailFragment extends Fragment implements View.OnClickListener {
 
 
     private static final String TAG = MovieDetailFragment.class.getSimpleName();
     private static final int LOAD_MOVIE = 1;
-    private Movie mMovie;
+    private RealmMovie mMovie;
     View mView;
 
 
-    Uri mUri;
+    String mUri;
     private boolean mLoading;
 
     ArrayList<ReviewType> mReviewList= new ArrayList<>();
@@ -81,13 +76,19 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     private Button mBtnTrailer;
     private Menu mMenu;
 
-    public static MovieDetailFragment getNewInstance(Uri movie){
+    ImageView mIvFavIcon;
+
+    Realm mRealm;
+    private View mHeaderView;
+    private View mToolBar;
+
+    public static MovieDetailFragment getNewInstance(String movie){
 
 
         MovieDetailFragment fragment= new MovieDetailFragment();
 
         Bundle bundle=new Bundle();
-        bundle.putParcelable(MovieDetailActivity.MOVIE, movie);
+        bundle.putString(MovieDetailActivity.MOVIE, movie);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -98,7 +99,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
         if(getArguments()!=null){
 
-            mUri= getArguments().getParcelable(MovieDetailActivity.MOVIE);
+            mUri= getArguments().getString(MovieDetailActivity.MOVIE);
 
         }
     }
@@ -114,19 +115,12 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
 
 
+        mRealm= Realm.getInstance(getContext());
         mView=inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
         mView.setVisibility(View.GONE);
 
-        Toolbar toolbar = (Toolbar) mView.findViewById(R.id.toolbar);
 
-        //set toolbar appearance
-
-        //for crate home button
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
-        activity.setSupportActionBar(toolbar);
-        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setHasOptionsMenu(true);
         return mView;
     }
 
@@ -152,14 +146,16 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
     private void toggleFavorate() {
 
-        mMovie.setFavourite(!mMovie.isFavourite());
-        updateIcon();
         updateDb();
+        updateIcon();
+
     }
 
     private void updateDb() {
 
-
+        mRealm.beginTransaction();
+        mMovie.setFavourite(!mMovie.isFavourite());
+        mRealm.commitTransaction();
 
     }
 
@@ -179,8 +175,12 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
+        RealmResults<RealmMovie> results= mRealm.where(RealmMovie.class)
+                                            .equalTo("id",mUri)
+                                            .findAll();
 
-        getLoaderManager().initLoader(LOAD_MOVIE, null, this);
+        mMovie= results.get(0);
+        initViews(mView);
 
         super.onActivityCreated(savedInstanceState);
     }
@@ -193,14 +193,18 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
 
         mAdapter = new ReviewsAdapter(mActivity, mReviewList);
-
+        mToolBar = view.findViewById(R.id.toolbar);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.my_recycler_view);
+        mIvFavIcon  = (ImageView) view.findViewById(R.id.iv_fav_icon);
+        ImageView backIcon= (ImageView) view.findViewById(R.id.iv_back_icon);
+        mIvFavIcon.setOnClickListener(this);
+        backIcon.setOnClickListener(this);
         mLayoutManager = new LinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mFooter = mActivity.getLayoutInflater().inflate(R.layout.list_footer, null);
         mFooter.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        View mHeaderView = mActivity.getLayoutInflater().inflate(R.layout.movie_detail_header, null);
+        mHeaderView = mActivity.getLayoutInflater().inflate(R.layout.movie_detail_header, null);
         mHeaderView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         ImageView poster = (ImageView) mHeaderView.findViewById(R.id.iv_posterview);
@@ -211,7 +215,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         PopularMovieApplication.mPicasso.load(AppUtils.createPosterUrl(mMovie.getBackdrop_path()))
                 .into(coverimage);
 
-
+        TextView action_bar_title= (TextView) mView.findViewById(R.id.tv_movie_title);
         TextView title = (TextView) mHeaderView.findViewById(R.id.tv_movie_title);
         TextView release = (TextView) mHeaderView.findViewById(R.id.tv_release_year);
         TextView users_rating = (TextView) mHeaderView.findViewById(R.id.tv_duration);
@@ -219,7 +223,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         TextView overview = (TextView) mHeaderView.findViewById(R.id.tv_overview);
 
         title.setText(mMovie.getTitle());
-
+        action_bar_title.setText(mMovie.getTitle());
         release.setText(mMovie.getRelease_date());
 
         DecimalFormat rating_format = new DecimalFormat("##.00");
@@ -264,8 +268,15 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
                     hideFooterView();
                     mAdapter.notifyDataSetChanged();
                 }
+
+
             }
 
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+
+                updateActionBar(dy);
+            }
         });
 
 
@@ -273,13 +284,39 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
 
 
         updateIcon();
+        updateActionBar(0);
+    }
+
+    private void updateActionBar(int dy) {
+
+
+        Logger.log(TAG, "header top " + mHeaderView.getTop());
+        dy=-mHeaderView.getTop();
+
+        if(dy<0){
+
+            dy=0;
+        }
+        else if( dy > getResources().getDisplayMetrics().density*300){
+
+            dy= (int) (getResources().getDisplayMetrics().density*300);
+        }
+
+        float ratio = (dy*1.0f) / (getResources().getDisplayMetrics().density*300);
+        Logger.log(TAG, "Dy " + dy + " ratio " + ratio);
+
+        mToolBar.setBackgroundColor(getFilteredColor(0xFFF5f5f5, ratio));
+
+    }
+
+    public static int getFilteredColor(int mEventColor, float ratio) {
+
+        return  Color.argb((int) (255 * ratio), Color.red(mEventColor), Color.green(mEventColor), Color.blue(mEventColor));
+
     }
 
     private void updateIcon() {
-
-
-        mMenu.findItem(R.id.action_fav).setIcon(mMovie.isFavourite()?R.drawable.star_fill:R.drawable.star_empty);
-
+        mIvFavIcon.setImageResource(mMovie.isFavourite()?R.drawable.eventdetails_love_pressed:R.drawable.eventdetails_love);
     }
 
 
@@ -342,82 +379,7 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
         return false;
     }
 
-    public static final int COL_ROW_ID=0;
-    public static final int COL_POSTER_PAHT=1;
-    public static final int COL_RLEASE_DATE=2;
-    public static final int COL_TITLE=3;
-    public static final int COL_VOTE_AVERAGE=4;
-    public static final int COL_VOTE_COUNT=5;
-    public static final int COL_OVERVIEW=6;
-    public static final int COL_BACKDROP_PATH=7;
-    public static final int COL_MOVIE_ID=8;
-    public static final int COL_IS_FAVORITE=9;
 
-    private static final String[] DETAIL_COLUMNS = {
-            MoviesContract.MovieEntry.TABLE_NAME + "." + MoviesContract.MovieEntry._ID,
-            MoviesContract.MovieEntry.COLUMN_POSTER_PATH,
-            MoviesContract.MovieEntry.COLUMN_RELEASE_DATE,
-            MoviesContract.MovieEntry.COLUMN_TITLE,
-            MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE,
-            MoviesContract.MovieEntry.COLUMN_VOTE_COUNT,
-            MoviesContract.MovieEntry.COLUMN_OVERVIEW,
-            MoviesContract.MovieEntry.COLUMN_BACKDROP_PATH,
-            MoviesContract.MovieEntry.COLUMN_MOVIE_ID,
-            MoviesContract.MovieEntry.COLUMN_FAVOURITE
-
-    };
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-
-        if ( null != mUri ) {
-            // Now create and return a CursorLoader that will take care of
-            // creating a Cursor for the data being displayed.
-            Logger.log(TAG," id "+MoviesContract.MovieEntry.getMovieIdFromUri(mUri));
-            return   new CursorLoader(
-                    getActivity(),
-                    mUri,
-                    DETAIL_COLUMNS,
-                    MoviesContract.MovieEntry._ID+"=?",
-                    null,
-                    null
-            );
-        }
-        return null;
-
-
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-
-        if (data != null && data.moveToFirst()) {
-            // Read weather condition ID from cursor
-            int movieId = data.getInt(COL_MOVIE_ID);
-
-            mMovie= new Movie();
-            mMovie.setTitle(data.getString(COL_TITLE));
-            mMovie.setOverview(data.getString(COL_OVERVIEW));
-            mMovie.setBackdrop_path(data.getString(COL_BACKDROP_PATH));
-            mMovie.setPoster_path(data.getString(COL_POSTER_PAHT));
-            mMovie.setVote_count(data.getInt(COL_VOTE_COUNT));
-            mMovie.setVote_average(data.getFloat(COL_VOTE_AVERAGE));
-            mMovie.setId(data.getString(COL_MOVIE_ID));
-            mMovie.setFavourite(Boolean.valueOf(data.getString(COL_IS_FAVORITE)));
-            long date= data.getLong(COL_RLEASE_DATE);
-            SimpleDateFormat format=new SimpleDateFormat("yyyy");
-            String release_date=format.format(new Date(date));
-            mMovie.setRelease_date(release_date);
-
-            initViews(mView);
-        }
-        }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
 
     private void makeApiCall(final int page) {
 
@@ -471,4 +433,18 @@ public class MovieDetailFragment extends Fragment implements LoaderManager.Loade
     }
 
 
+    @Override
+    public void onClick(View v) {
+
+
+        switch (v.getId()){
+
+            case R.id.iv_back_icon:
+                 getActivity().onBackPressed();
+                 break;
+            case R.id.iv_fav_icon:
+                 toggleFavorate();
+                break;
+        }
+    }
 }

@@ -74,6 +74,7 @@
             android:textColor="@color/white"
             android:background="@color/video_background"
             android:id="@+id/btn_trailer"
+            android:visibility="invisible"
             android:layout_height="wrap_content" />
 
 

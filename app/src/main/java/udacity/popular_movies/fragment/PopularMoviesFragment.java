@@ -1,13 +1,11 @@
 package udacity.popular_movies.fragment;
 
 import android.app.Activity;
-import android.database.Cursor;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
+import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,16 +19,23 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
+import io.realm.Sort;
 import udacity.popular_movies.R;
+import udacity.popular_movies.activity.FavoriteMoviesActivity;
+import udacity.popular_movies.activity.SettingsActivity;
 import udacity.popular_movies.adapter.MoviesAdapter;
 import udacity.popular_movies.data.MoviesContract;
 import udacity.popular_movies.datatypes.Movie;
+import udacity.popular_movies.datatypes.RealmMovie;
 import udacity.popular_movies.event.LoadDataEvent;
 import udacity.popular_movies.event.MessageEvent;
+import udacity.popular_movies.utils.AppUtils;
 import udacity.popular_movies.utils.Logger;
 
 
-public class PopularMoviesFragment extends Fragment implements AdapterView.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class PopularMoviesFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private static final String CURRENT_PAGE = "current_page";
     private static final String TAG = PopularMoviesFragment.class.getSimpleName();
@@ -53,6 +58,11 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
     public static final int MOVIE_ROW_ID=0;
     public static final int POSTER_PATH=1;
+    private RealmResults<RealmMovie> mResults;
+
+
+    PopupMenu mMenu;
+
 
     public static PopularMoviesFragment newInstance() {
         PopularMoviesFragment fragment = new PopularMoviesFragment();
@@ -82,7 +92,6 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(MOVIES_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
     @Override
@@ -112,9 +121,6 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         mGridViewPopularMovies = (GridView) view.findViewById(R.id.gridview_popularmovies);
 
         mFooter=  view.findViewById(R.id.footer_loader);
-        mAdapter=new MoviesAdapter(getActivity(),null,0);
-
-        mGridViewPopularMovies.setAdapter(mAdapter);
         mGridViewPopularMovies.setOnItemClickListener(this);
 
         mGridViewPopularMovies.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -154,11 +160,18 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         mPage=1;
         EventBus.getDefault().post(new LoadDataEvent(mPage));
 
+        Realm realm = Realm.getInstance(getActivity());
+        mResults = realm.allObjects(RealmMovie.class);
+
+        mAdapter= new MoviesAdapter(getActivity(),mResults,true);
+        mGridViewPopularMovies.setAdapter(mAdapter);
+
+
+
     }
 
 
-
-    private void showFooter(){
+    private void showFooter() {
 
         mFooter.setVisibility(View.VISIBLE);
     }
@@ -215,47 +228,25 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-        mListener.onPosterClick(MoviesContract.MovieEntry.buidMovieUri(id));
+        mListener.onPosterClick(mResults.get(position).getId());
     }
 
     public void refreshData() {
 
-        mMoviesList.clear();
+
+        if(AppUtils.getSortByOption().equals(getResources().getString(R.string.pref_sortby_hightestrated))) {
+            mResults.sort("vote_average", Sort.DESCENDING);
+            Logger.log(TAG,"sort by vote avg");
+        }
+        else{
+            mResults.sort("popularity", Sort.DESCENDING);
+            Logger.log(TAG, "sort by popuplarity");
+
+        }
+
         mPage=1;
         mAdapter.notifyDataSetChanged();
 
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String sortOrder = MoviesContract.MovieEntry.COLUMN_POPULARITY + " DESC";
-
-
-        CursorLoader cursor= new CursorLoader(getActivity(),
-                MoviesContract.MovieEntry.CONTENT_URI,
-                MOVIES_COLUMNS,
-                null,
-                null,
-                sortOrder);
-
-        return cursor;
-
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-        mAdapter.swapCursor(data);
-
-    }
-
-
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-        mAdapter.swapCursor(null);
     }
 
 
@@ -273,7 +264,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
-        public void onPosterClick(Uri uri);
+        public void onPosterClick(String id);
     }
 
 

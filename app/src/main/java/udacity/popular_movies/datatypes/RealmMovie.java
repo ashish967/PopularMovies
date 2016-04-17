@@ -1,11 +1,12 @@
 package udacity.popular_movies.datatypes;
 
+import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 /**
- * Created by ashish-novelroots on 6/3/16.
+ * Created by ashish-novelroots on 17/4/16.
  */
-public class Movie  {
+public class RealmMovie extends RealmObject {
 
     private String poster_path,overview,orginal_title,original_language,title
             ,backdrop_path;
@@ -15,7 +16,8 @@ public class Movie  {
     private int vote_count;
 
 
-    @PrimaryKey private String id;
+    @PrimaryKey
+    private String id;
     private boolean adult,video,favourite;
 
     private String release_date;
@@ -133,8 +135,6 @@ public class Movie  {
     public void setVideo(boolean video) {
         this.video = video;
     }
-
-
 
 
 

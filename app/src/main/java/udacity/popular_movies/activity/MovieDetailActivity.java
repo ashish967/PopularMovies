@@ -2,7 +2,6 @@ package udacity.popular_movies.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -13,13 +12,13 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     public static final String MOVIE = "MOVIE";
 
-    private Uri mUri;
+    private String mMovieId;
 
 
-    public static Intent createIntent(Context context,Uri movie){
+    public static Intent createIntent(Context context,String movie){
 
         Intent intent= new Intent(context,MovieDetailActivity.class);
-        intent.putExtra(MOVIE,movie);
+        intent.putExtra(MOVIE, movie);
         return intent;
     }
 
@@ -33,7 +32,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
         if(savedInstanceState==null) {
             getSupportFragmentManager().beginTransaction().
-                    add(R.id.content, MovieDetailFragment.getNewInstance(mUri)).commit();
+                    add(R.id.content, MovieDetailFragment.getNewInstance(mMovieId)).commit();
         }
 
 
@@ -42,7 +41,7 @@ public class MovieDetailActivity extends AppCompatActivity {
 
     private void getExtras() {
 
-        mUri= getIntent().getParcelableExtra(MOVIE);
+        mMovieId = getIntent().getStringExtra(MOVIE);
 
     }
 

@@ -25,4 +25,5 @@
         <item>@string/pref_sortby_popularity</item>
         <item>@string/pref_sortby_hightestrated</item>
     </string-array>
+    <string name="title_activity_favorite_movies">FavoriteMoviesActivity</string>
 </resources>
