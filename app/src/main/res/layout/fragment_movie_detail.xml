@@ -1,120 +1,23 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="udacity.popular_movies.fragment.MovieDetailFragment">
 
 
-    <LinearLayout
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/my_recycler_view"
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:orientation="vertical"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        />
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="100dp">
+    <android.support.v7.widget.Toolbar
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimaryDark"/>
 
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:id="@+id/iv_coverimage"
-                android:background="#CD000000"
-                android:scaleType="centerCrop"
-                android:layout_height="match_parent" />
-
-
-            <TextView
-                android:layout_width="match_parent"
-                android:id="@+id/tv_movie_title"
-                android:textSize="20sp"
-                android:layout_gravity="bottom|left"
-                android:padding="20dp"
-                android:text="Dark Knight"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:layout_height="wrap_content" />
-
-        </FrameLayout>
-
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            android:layout_height="wrap_content">
-
-
-            <ImageView
-                android:layout_width="185dp"
-                android:layout_height="276dp"
-                android:id="@+id/iv_posterview"/>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-
-                android:layout_height="wrap_content">
-
-
-                <TextView
-                    android:id="@+id/tv_release_year"
-                    android:textSize="18sp"
-                    android:textColor="@android:color/black"
-                    android:text="2015"
-                    android:layout_marginBottom="10dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-
-                <TextView
-                    android:id="@+id/tv_duration"
-                    android:textSize="15sp"
-                    android:textColor="@android:color/black"
-                    android:text="12:15 min."
-                    android:layout_marginBottom="10dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-
-                <TextView
-                    android:id="@+id/tv_rating"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/black"
-                    android:text="8.5/10"
-                    android:layout_marginBottom="10dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-
-            </LinearLayout>
-
-
-        </LinearLayout>
-
-
-        <TextView
-            android:text="OVERVIEW"
-            android:layout_marginLeft="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="10dp"
-            android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:id="@+id/tv_overview"
-            android:textSize="12sp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginBottom="10dp"
-            android:textColor="@android:color/black"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-</ScrollView>
+</FrameLayout>

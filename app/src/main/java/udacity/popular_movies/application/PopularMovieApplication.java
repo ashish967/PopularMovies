@@ -10,6 +10,7 @@ import com.squareup.picasso.Picasso;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
 import udacity.popular_movies.services.ApiCalls;
+import udacity.popular_movies.sync.SyncService;
 
 /**
  * Created by ashish-novelroots on 6/3/16.
@@ -44,6 +45,8 @@ public class PopularMovieApplication extends Application{
 
 
         mMoviesApiService= retrofit.create(ApiCalls.class);
+
+        SyncService.initialize();
 
     }
 }

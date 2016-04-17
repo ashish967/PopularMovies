@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#4A4A4A</color>
+    <color name="off_black">#9b9b9b</color>
+    <color name="video_background">#349484</color>
+    <color name="white">#FFFFFF</color>
+</resources>

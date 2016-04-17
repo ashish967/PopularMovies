@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="udacity.popular_movies.fragment.PopularMoviesFragment">
 
 
@@ -8,5 +9,8 @@
         android:layout_width="match_parent"
         android:numColumns="2"
         android:id="@+id/gridview_popularmovies"
-        android:layout_height="match_parent"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <include layout="@layout/footer_loader"/>
 </LinearLayout>

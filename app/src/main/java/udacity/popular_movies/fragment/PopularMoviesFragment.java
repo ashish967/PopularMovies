@@ -1,10 +1,13 @@
 package udacity.popular_movies.fragment;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,25 +16,25 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.util.ArrayList;
 
-import retrofit.Call;
-import retrofit.Callback;
-import retrofit.Response;
-import retrofit.Retrofit;
-import udacity.popular_movies.BuildConfig;
 import udacity.popular_movies.R;
 import udacity.popular_movies.adapter.MoviesAdapter;
-import udacity.popular_movies.application.PopularMovieApplication;
+import udacity.popular_movies.data.MoviesContract;
 import udacity.popular_movies.datatypes.Movie;
-import udacity.popular_movies.datatypes.MoviesListResult;
-import udacity.popular_movies.utils.AppUtils;
+import udacity.popular_movies.event.LoadDataEvent;
+import udacity.popular_movies.event.MessageEvent;
+import udacity.popular_movies.utils.Logger;
 
 
-public class PopularMoviesFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class PopularMoviesFragment extends Fragment implements AdapterView.OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String CURRENT_PAGE = "current_page";
     private static final String TAG = PopularMoviesFragment.class.getSimpleName();
+    private static final int MOVIES_LOADER = 1;
     private OnFragmentInteractionListener mListener;
 
     GridView mGridViewPopularMovies;
@@ -40,7 +43,16 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
     int mPage;
     boolean mLoading;
 
+    View mFooter;
+    private static final String[] MOVIES_COLUMNS={
 
+        MoviesContract.MovieEntry.TABLE_NAME+"."+ MoviesContract.MovieEntry._ID
+        ,MoviesContract.MovieEntry.COLUMN_POSTER_PATH
+
+    };
+
+    public static final int MOVIE_ROW_ID=0;
+    public static final int POSTER_PATH=1;
 
     public static PopularMoviesFragment newInstance() {
         PopularMoviesFragment fragment = new PopularMoviesFragment();
@@ -53,14 +65,26 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         // Required empty public constructor
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
+        EventBus.getDefault().register(this);
 
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(MOVIES_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -78,7 +102,6 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         }
 
 
-        makeApiCall();
 
         return view;
     }
@@ -88,7 +111,8 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
         mGridViewPopularMovies = (GridView) view.findViewById(R.id.gridview_popularmovies);
 
-        mAdapter=new MoviesAdapter(getActivity(),mMoviesList);
+        mFooter=  view.findViewById(R.id.footer_loader);
+        mAdapter=new MoviesAdapter(getActivity(),null,0);
 
         mGridViewPopularMovies.setAdapter(mAdapter);
         mGridViewPopularMovies.setOnItemClickListener(this);
@@ -104,7 +128,6 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
                 }
 
-
                 int pastVisiblesItems = view.getFirstVisiblePosition();
                 int visibleItemCount = view.getChildCount();
                 int totalItemCount = view.getCount();
@@ -114,7 +137,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
                 if ((visibleItemCount + pastVisiblesItems) >= totalItemCount - 5 && !mLoading && mPage != 0) {
 
                     Toast.makeText(getActivity(), "Loading More Movies", Toast.LENGTH_SHORT).show();
-                    makeApiCall();
+                    EventBus.getDefault().post(new LoadDataEvent(mPage));
 
                 } else if (mPage == 0) {
 //                    Toast.makeText(getContext(),"All Page loaded",Toast.LENGTH_SHORT).show();
@@ -127,51 +150,34 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
             }
         });
+
         mPage=1;
-
-
+        EventBus.getDefault().post(new LoadDataEvent(mPage));
 
     }
 
-    private void makeApiCall() {
 
 
-        mLoading=true;
-        Call<MoviesListResult> call= PopularMovieApplication.mMoviesApiService.getMoviesList(BuildConfig.MOVIE_DB_API_KEY, mPage, AppUtils.getSortByOption());
+    private void showFooter(){
 
-        Log.d(TAG, "Sortby " + AppUtils.getSortByOption());
-        call.enqueue(new Callback<MoviesListResult>() {
-            @Override
-            public void onResponse(Response<MoviesListResult> response, Retrofit retrofit) {
-//                Log.d(TAG, response.body() + "");
-                mLoading=false;
+        mFooter.setVisibility(View.VISIBLE);
+    }
 
-                MoviesListResult result= response.body();
+    private void hideFooter(){
 
-                if(result==null){
-                    return;
-                }
+        mFooter.setVisibility(View.GONE);
+    }
+    @Subscribe
+    public void onMessageEvent(MessageEvent event){
 
-                if(result.getResults()!=null) {
-                    mMoviesList.addAll(result.getResults());
-                    mPage++;
-                    Log.d(TAG, "List size " + mMoviesList.size());
-                    mAdapter.notifyDataSetChanged();
+        if(event.isSuccess()){
 
-                }
-                else{
-                    mPage=0;
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                mLoading=false;
-                Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
-                t.printStackTrace();
-            }
-        });
-
+            mPage++;
+            Logger.log(TAG,"Success event loadedd "+event.getMessage());
+        }
+        else{
+            Toast.makeText(getActivity(),event.getMessage(),Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -209,7 +215,8 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        mListener.onPosterClick(mMoviesList.get(position));
+        Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+        mListener.onPosterClick(MoviesContract.MovieEntry.buidMovieUri(id));
     }
 
     public void refreshData() {
@@ -218,8 +225,40 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         mPage=1;
         mAdapter.notifyDataSetChanged();
 
-        makeApiCall();
     }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String sortOrder = MoviesContract.MovieEntry.COLUMN_POPULARITY + " DESC";
+
+
+        CursorLoader cursor= new CursorLoader(getActivity(),
+                MoviesContract.MovieEntry.CONTENT_URI,
+                MOVIES_COLUMNS,
+                null,
+                null,
+                sortOrder);
+
+        return cursor;
+
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        mAdapter.swapCursor(data);
+
+    }
+
+
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+        mAdapter.swapCursor(null);
+    }
+
+
 
     /**
      * This interface must be implemented by activities that contain this
@@ -234,7 +273,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
-        public void onPosterClick(Movie movie);
+        public void onPosterClick(Uri uri);
     }
 
 

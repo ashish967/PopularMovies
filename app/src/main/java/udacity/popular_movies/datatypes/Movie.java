@@ -1,8 +1,14 @@
 package udacity.popular_movies.datatypes;
 
+import android.content.ContentValues;
+
 import java.io.Serializable;
-import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+
+import udacity.popular_movies.data.MoviesContract;
+import udacity.popular_movies.utils.Logger;
 
 /**
  * Created by ashish-novelroots on 6/3/16.
@@ -16,15 +22,25 @@ public class Movie implements Serializable{
     float vote_average;
     int vote_count;
 
-    boolean adult,video;
 
-    Date release_date;
 
-    public Date getRelease_date() {
+    boolean adult,video,favourite;
+
+    String release_date;
+
+    public boolean isFavourite() {
+        return favourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
+    }
+
+    public String getRelease_date() {
         return release_date;
     }
 
-    public void setRelease_date(Date release_date) {
+    public void setRelease_date(String release_date) {
         this.release_date = release_date;
     }
 
@@ -133,5 +149,33 @@ public class Movie implements Serializable{
 
     public void setGenre_ids(ArrayList<Integer> genre_ids) {
         this.genre_ids = genre_ids;
+    }
+
+
+    public ContentValues createContentValues() {
+
+        ContentValues movieValues = new ContentValues();
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_BACKDROP_PATH, getBackdrop_path());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_FAVOURITE, isFavourite());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_ID, getId());;
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_ORGINAL_LANGUAGE, getOriginal_language());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_TITLE, getOrginal_title());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, getOverview());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH,getPoster_path());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE,getTitle());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY,getPopularity());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_ADULT, isAdult());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_VIDEO, isVideo());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, getVote_average());
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_COUNT, getVote_count());
+        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd");
+        java.util.Date date;
+        try {
+            date=format.parse(getRelease_date());
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE,date.getTime());
+        } catch (ParseException e) {
+            Logger.log(e);
+        }
+        return movieValues;
     }
 }

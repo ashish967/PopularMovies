@@ -9,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import udacity.popular_movies.R;
-import udacity.popular_movies.datatypes.Movie;
 import udacity.popular_movies.fragment.PopularMoviesFragment;
 import udacity.popular_movies.utils.AppUtils;
 
@@ -25,7 +24,6 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate");
-
     }
 
 
@@ -35,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
     }
 
     @Override
-    public void onPosterClick(Movie movie) {
+    public void onPosterClick(Uri movie) {
 
 //        Toast.makeText(this,"Movie: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
 
