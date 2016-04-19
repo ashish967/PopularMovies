@@ -38,6 +38,7 @@
             android:singleLine="true"
             android:id="@+id/tv_movie_title"
             android:text="Movie Detail"
+            android:layout_marginLeft="10dp"
             android:layout_gravity="center_vertical"
             android:textColor="@color/black"
             android:textSize="@dimen/action_bar_title_size"

@@ -57,7 +57,7 @@ public class FavoriteMoviesActivity extends AppCompatActivity {
                     .equalTo("favourite",true)
                     .findAll();
 
-        mAdapter= new MoviesAdapter(this,mResults,true);
+        mAdapter= new MoviesAdapter(this,mResults,true,false);
         mGridViewPopularMovies.setAdapter(mAdapter);
 
 

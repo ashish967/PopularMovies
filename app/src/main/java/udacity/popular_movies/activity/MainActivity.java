@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import udacity.popular_movies.R;
+import udacity.popular_movies.fragment.MovieDetailFragment;
 import udacity.popular_movies.fragment.PopularMoviesFragment;
 import udacity.popular_movies.utils.AppUtils;
 
@@ -24,10 +25,23 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
     String mSortBy;
     private PopupMenu mMenu;
 
+    boolean mTwoPane;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        PopularMoviesFragment fragment= (PopularMoviesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_popularmovies);
+
+        if(findViewById(R.id.movie_detail_container)!=null){
+            fragment.setTwoPane(true);
+            mTwoPane=true;
+        }
+        else{
+            fragment.setTwoPane(false);
+            mTwoPane=false;
+        }
 
         ImageView moreoption= (ImageView) findViewById(R.id.iv_more_option);
 
@@ -87,9 +101,16 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
     public void onPosterClick(String movie) {
 
 //        Toast.makeText(this,"Movie: "+movie.getTitle(),Toast.LENGTH_SHORT).show();
-
-        Intent intent= MovieDetailActivity.createIntent(this,movie);
-        startActivity(intent);
+        if(!mTwoPane) {
+            Intent intent = MovieDetailActivity.createIntent(this, movie);
+            startActivity(intent);
+        }
+        else{
+            MovieDetailFragment fragment=MovieDetailFragment.getNewInstance(movie);
+            fragment.setTwoSpan(true);
+            getSupportFragmentManager().beginTransaction().
+                    replace(R.id.movie_detail_container, fragment).commit();
+        }
     }
 
     @Override

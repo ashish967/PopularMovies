@@ -1,7 +1,6 @@
 package udacity.popular_movies.fragment;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,8 +22,6 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
 import udacity.popular_movies.R;
-import udacity.popular_movies.activity.FavoriteMoviesActivity;
-import udacity.popular_movies.activity.SettingsActivity;
 import udacity.popular_movies.adapter.MoviesAdapter;
 import udacity.popular_movies.data.MoviesContract;
 import udacity.popular_movies.datatypes.Movie;
@@ -62,6 +59,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
 
     PopupMenu mMenu;
+    private boolean mTwoPan;
 
 
     public static PopularMoviesFragment newInstance() {
@@ -99,7 +97,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-
+        setRetainInstance(true);
         View view=inflater.inflate(R.layout.fragment_poplular_movies, container, false);
 
         initViews(view);
@@ -112,6 +110,8 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
 
 
+
+
         return view;
     }
 
@@ -119,6 +119,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
 
         mGridViewPopularMovies = (GridView) view.findViewById(R.id.gridview_popularmovies);
+
 
         mFooter=  view.findViewById(R.id.footer_loader);
         mGridViewPopularMovies.setOnItemClickListener(this);
@@ -163,9 +164,17 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         Realm realm = Realm.getInstance(getActivity());
         mResults = realm.allObjects(RealmMovie.class);
 
-        mAdapter= new MoviesAdapter(getActivity(),mResults,true);
-        mGridViewPopularMovies.setAdapter(mAdapter);
+        mAdapter= new MoviesAdapter(getActivity(),mResults,true,mTwoPan);
 
+        if(mTwoPan){
+
+            mGridViewPopularMovies.setNumColumns(1);
+        }
+        else{
+            mGridViewPopularMovies.setNumColumns(2);
+        }
+
+        mGridViewPopularMovies.setAdapter(mAdapter);
 
 
     }
@@ -249,6 +258,22 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
     }
 
+    public void setTwoPane(boolean b) {
+
+        mTwoPan=b;
+
+        mAdapter= new MoviesAdapter(getActivity(),mResults,true,mTwoPan);
+
+        if(mTwoPan){
+
+            mGridViewPopularMovies.setNumColumns(1);
+        }
+        else{
+            mGridViewPopularMovies.setNumColumns(2);
+        }
+
+        mGridViewPopularMovies.setAdapter(mAdapter);
+    }
 
 
     /**

@@ -15,7 +15,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -73,7 +72,6 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
     private int mNext;
     private ArrayList<VideoType> mTrailerResult
             ;
-    private Button mBtnTrailer;
     private Menu mMenu;
 
     ImageView mIvFavIcon;
@@ -81,6 +79,7 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
     Realm mRealm;
     private View mHeaderView;
     private View mToolBar;
+    private boolean mTwospan;
 
     public static MovieDetailFragment getNewInstance(String movie){
 
@@ -197,6 +196,10 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
         mRecyclerView = (RecyclerView) view.findViewById(R.id.my_recycler_view);
         mIvFavIcon  = (ImageView) view.findViewById(R.id.iv_fav_icon);
         ImageView backIcon= (ImageView) view.findViewById(R.id.iv_back_icon);
+
+        if(mTwospan){
+            backIcon.setVisibility(View.GONE);
+        }
         mIvFavIcon.setOnClickListener(this);
         backIcon.setOnClickListener(this);
         mLayoutManager = new LinearLayoutManager(mActivity);
@@ -234,17 +237,7 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
         overview.setText(mMovie.getOverview());
 
 
-        mBtnTrailer= (Button) mHeaderView.findViewById(R.id.btn_trailer);
-        mBtnTrailer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                String url = "http://www.youtube.com/watch?v=" + mTrailerResult.get(0).getId();
-                Logger.log(TAG, url);
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-            }
-        });
-        mBtnTrailer.setVisibility(View.VISIBLE);
         mAdapter.setHeader(mHeaderView);
         mAdapter.setFooter(mFooter);
         mNext = 1;
@@ -336,11 +329,19 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
 
                 VideosResult result = response.body();
 
-                 mTrailerResult= result.getResults();
+                mTrailerResult = result.getResults();
 
-                if(mTrailerResult!=null||!mTrailerResult.isEmpty()){
+                LinearLayout trailerContainer = (LinearLayout) mView.findViewById(R.id.trailer_containers);
 
-                    mBtnTrailer.setVisibility(View.VISIBLE);
+                for (int i = 0; i < mTrailerResult.size(); i++) {
+
+                    View view = LayoutInflater.from(PopularMovieApplication.mContext).inflate(R.layout.trailer_item, trailerContainer, false);
+                    TextView trailer = (TextView) view.findViewById(R.id.tv_trailer);
+                    trailer.setText("Trailer " + (i + 1));
+                    view.setOnClickListener(MovieDetailFragment.this);
+                    view.setTag(i);
+                    trailerContainer.addView(view);
+                    Logger.log(TAG,"Added trailer "+i);
                 }
 
             }
@@ -389,7 +390,7 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
             Logger.log(TAG, "Already  loading...");
             return;
         }
-        Call<ReviewsListResult> call= PopularMovieApplication.mMoviesApiService.getReviewsList(mMovie.getId(),BuildConfig.MOVIE_DB_API_KEY, page );
+        Call<ReviewsListResult> call= PopularMovieApplication.mMoviesApiService.getReviewsList(mMovie.getId(), BuildConfig.MOVIE_DB_API_KEY, page);
 
         Log.d(TAG, "Sortby " + AppUtils.getSortByOption());
         call.enqueue(new Callback<ReviewsListResult>() {
@@ -445,6 +446,26 @@ public class MovieDetailFragment extends Fragment implements View.OnClickListene
             case R.id.iv_fav_icon:
                  toggleFavorate();
                 break;
+
+            case R.id.trailer_item:
+                handleTrailerAction(v);
         }
+    }
+
+    private void handleTrailerAction(View v) {
+
+
+        int pos= (int) v.getTag();
+
+        String id=mTrailerResult.get(pos).getKey();
+
+        String url = "http://www.youtube.com/watch?v=" +id;
+        Logger.log(TAG, url);
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+
+    public void setTwoSpan(boolean b) {
+
+        mTwospan= b;
     }
 }

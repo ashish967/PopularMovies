@@ -29,11 +29,15 @@ public class MoviesAdapter extends RealmBaseAdapter<RealmMovie> implements ListA
 
     int mParentWidth;
 
+    boolean mTwoPan;
+
     public MoviesAdapter(Context context,
                          RealmResults<RealmMovie> realmResults,
-                         boolean automaticUpdate)
+                         boolean automaticUpdate,boolean twopan)
     {
+
         super(context, realmResults, automaticUpdate);
+        mTwoPan=twopan;
     }
 
     @Override
@@ -49,11 +53,14 @@ public class MoviesAdapter extends RealmBaseAdapter<RealmMovie> implements ListA
         MovieViewHolder viewHolder = (MovieViewHolder) convertView.getTag();
         if(viewHolder.mImageViewPoster.getLayoutParams()!=null){
 
-            int available_width= mParentWidth/2;
+            int available_width= mParentWidth;
+            if(!mTwoPan){
+                available_width=mParentWidth/2;
+            }
+
             viewHolder.mImageViewPoster.getLayoutParams().width=available_width;
             viewHolder.mImageViewPoster.getLayoutParams().height= (int) (available_width/0.68);
-        }
-        else{
+        } else {
             Log.d(TAG,"Null viewholder image params");
         }
 

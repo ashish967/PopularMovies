@@ -6,7 +6,15 @@ package udacity.popular_movies.datatypes;
 public class VideoType {
 
 
-    String id;
+    String id,key;
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
 
     public String getId() {
         return id;
