@@ -1,33 +1,27 @@
 package udacity.popular_movies.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
 import udacity.popular_movies.R;
-import udacity.popular_movies.adapter.MoviesAdapter;
-import udacity.popular_movies.datatypes.RealmMovie;
+import udacity.popular_movies.fragment.FavoriteMoviesFragment;
 
-public class FavoriteMoviesActivity extends AppCompatActivity {
-
-
-
-    GridView mGridViewPopularMovies;
-
-    MoviesAdapter mAdapter;
-    private RealmResults<RealmMovie> mResults;
+public class FavoriteMoviesActivity extends MainActivity {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
+    }
+
+    @Override
+    protected void init() {
+
         setContentView(R.layout.activity_favorite_movies);
 
 
@@ -40,27 +34,16 @@ public class FavoriteMoviesActivity extends AppCompatActivity {
         });
 
 
-        mGridViewPopularMovies = (GridView) findViewById(R.id.gridview_popularmovies);
-        mGridViewPopularMovies.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        FavoriteMoviesFragment fragment= (FavoriteMoviesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_popularmovies);
 
-
-
-                Intent intent= MovieDetailActivity.createIntent(FavoriteMoviesActivity.this,mResults.get(position).getId());
-                startActivity(intent);
-            }
-        });
-
-        Realm realm = Realm.getInstance(this);
-        mResults = realm.where(RealmMovie.class)
-                    .equalTo("favourite",true)
-                    .findAll();
-
-        mAdapter= new MoviesAdapter(this,mResults,true,false);
-        mGridViewPopularMovies.setAdapter(mAdapter);
-
-
+        if(findViewById(R.id.movie_detail_container)!=null){
+            fragment.setTwoPane(true);
+            mTwoPane=true;
+        }
+        else{
+            fragment.setTwoPane(false);
+            mTwoPane=false;
+        }
     }
 
     @Override

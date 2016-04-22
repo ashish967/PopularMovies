@@ -30,6 +30,15 @@ public class MainActivity extends AppCompatActivity implements PopularMoviesFrag
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        init();
+
+
+    }
+
+    protected void init() {
+
+
         setContentView(R.layout.activity_main);
 
         PopularMoviesFragment fragment= (PopularMoviesFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_popularmovies);

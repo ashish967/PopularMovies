@@ -55,11 +55,11 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
 
     public static final int MOVIE_ROW_ID=0;
     public static final int POSTER_PATH=1;
-    private RealmResults<RealmMovie> mResults;
+    protected RealmResults<RealmMovie> mResults;
 
 
     PopupMenu mMenu;
-    private boolean mTwoPan;
+    protected boolean mTwoPan;
 
 
     public static PopularMoviesFragment newInstance() {
@@ -143,8 +143,7 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
                 // we have reached at the end
                 if ((visibleItemCount + pastVisiblesItems) >= totalItemCount - 5 && !mLoading && mPage != 0) {
 
-                    Toast.makeText(getActivity(), "Loading More Movies", Toast.LENGTH_SHORT).show();
-                    EventBus.getDefault().post(new LoadDataEvent(mPage));
+                    loadMoreMovies();
 
                 } else if (mPage == 0) {
 //                    Toast.makeText(getContext(),"All Page loaded",Toast.LENGTH_SHORT).show();
@@ -161,6 +160,19 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         mPage=1;
         EventBus.getDefault().post(new LoadDataEvent(mPage));
 
+        setAdapter();
+
+
+    }
+
+    protected void loadMoreMovies() {
+
+        Toast.makeText(getActivity(), "Loading More Movies", Toast.LENGTH_SHORT).show();
+        EventBus.getDefault().post(new LoadDataEvent(mPage));
+    }
+
+    protected void setAdapter() {
+
         Realm realm = Realm.getInstance(getActivity());
         mResults = realm.allObjects(RealmMovie.class);
 
@@ -175,7 +187,6 @@ public class PopularMoviesFragment extends Fragment implements AdapterView.OnIte
         }
 
         mGridViewPopularMovies.setAdapter(mAdapter);
-
 
     }
 
